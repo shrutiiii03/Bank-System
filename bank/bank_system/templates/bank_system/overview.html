@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Overview</title>
+    <style>
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .overview-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .overview-table, .overview-table th, .overview-table td {
+            border: 1px solid #ddd;
+        }
+        .overview-table th, .overview-table td {
+            padding: 8px;
+            text-align: left;
+        }
+        .overview-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <h1>Account Overview</h1>
+
+    <div id="account-overview">
+
+    </div>
+
+    <script>
+        async function fetchAccountOverview(customerId) {
+            try {
+                const response = await fetch(`/account-overview/${customerId}/`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    const loans = data.loans;
+                    let html = '';
+                    loans.forEach(loan => {
+                        html += `
+                            <h2>Loan ID: ${loan.loan_id}</h2>
+                            <table class="overview-table">
+                                <thead>
+                                    <tr>
+                                        <th>Loan Amount (P)</th>
+                                        <th>Total Amount (A)</th>
+                                        <th>EMI Amount</th>
+                                        <th>Total Interest (I)</th>
+                                        <th>Amount Paid</th>
+                                        <th>EMIs Left</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>${loan.loan_amount}</td>
+                                        <td>${loan.total_amount}</td>
+                                        <td>${loan.emi_amount}</td>
+                                        <td>${loan.total_interest}</td>
+                                        <td>${loan.amount_paid}</td>
+                                        <td>${loan.emi_left}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        `;
+                    });
+
+                    document.getElementById('account-overview').innerHTML = html;
+                } else {
+                    document.getElementById('account-overview').innerHTML = `<p>Error: ${data.error}</p>`;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('account-overview').innerHTML = `<p>Error: Could not retrieve account overview.</p>`;
+            }
+        }
+        fetchAccountOverview(1);
+    </script>
+</body>
+</html>

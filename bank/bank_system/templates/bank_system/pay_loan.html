@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pay Loan</title>
+    <style>
+        .form-group {
+            margin-bottom: 15px;
+        }
+    </style>
+    <script>
+        function getCSRFToken() {
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        return csrfToken;
+    }
+
+        function togglePaymentAmount() {
+            const paymentType = document.getElementById('payment_type').value;
+            const paymentAmountDiv = document.getElementById('payment_amount_div');
+            if (paymentType === 'LUMP_SUM') {
+                paymentAmountDiv.style.display = 'block';
+            } else {
+                paymentAmountDiv.style.display = 'none';
+            }
+        }
+        async function submitForm(event) {
+            event.preventDefault(); 
+            const loanId = document.getElementById('loan_id').value;
+            const paymentType = document.getElementById('payment_type').value;
+            const paymentAmount = paymentType === 'LUMP_SUM' ? document.getElementById('payment_amount').value : 0;
+            const data = {
+                loan_id: loanId,
+                payment_type: paymentType,
+                payment_amount: paymentAmount
+            };
+            try {
+                const response = await fetch('/api/payment/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken() 
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (response.ok) {
+                    document.getElementById('response').innerHTML = `
+                        <p>Payment successful!</p>
+                        <p>Remaining Balance: ${result.remaining_balance}</p>
+                        <p>EMIs Left: ${result.emi_left}</p>
+                    `;
+                } else {
+                    document.getElementById('response').innerHTML = `<p>Error: ${result.error}</p>`;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('response').innerHTML = `<p>Error: Could not process payment.</p>`;
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <h1>Pay Your Loan</h1>
+
+    <form id="pay_loan_form" onsubmit="submitForm(event)" method="POST" action="/api/payment/">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="loan_id">Loan ID:</label>
+            <input type="number" id="loan_id" name="loan_id" required>
+        </div>
+
+        <div class="form-group">
+            <label for="payment_type">Payment Type:</label>
+            <select id="payment_type" name="payment_type" onchange="togglePaymentAmount()" required>
+                <option value="EMI">EMI</option>
+                <option value="LUMP_SUM">Lump Sum</option>
+            </select>
+        </div>
+
+        <div class="form-group" id="payment_amount_div" style="display: none;">
+            <label for="payment_amount">Payment Amount (for Lump Sum):</label>
+            <input type="number" id="payment_amount" name="payment_amount" step="0.01">
+        </div>
+
+        <button type="submit">Make Payment</button>
+    </form>
+
+    <div id="response"></div>
+
+</body>
+</html>

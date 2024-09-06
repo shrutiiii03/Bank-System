@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loan Ledger</title>
+    <style>
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .ledger-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .ledger-table, .ledger-table th, .ledger-table td {
+            border: 1px solid #ddd;
+        }
+        .ledger-table th, .ledger-table td {
+            padding: 8px;
+            text-align: left;
+        }
+        .ledger-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+    <script>
+        function getCSRFToken() {
+            const cookies = document.cookie.split(';');
+            for (const cookie of cookies) {
+                const [name, value] = cookie.split('=');
+                if (name.trim() === 'csrftoken') {
+                    return value;
+                }
+            }
+            return '';
+        }
+
+        async function submitForm(event) {
+            event.preventDefault(); 
+
+            const loanId = document.getElementById('loan_id').value;
+
+            try {
+                const response = await fetch(`/ledger/${loanId}/`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    }
+                });
+
+                const result = await response.json();
+                console.log('API Response:', result);
+
+                if (response.ok) {
+                    const ledger = document.getElementById('ledger');
+                    const transactionsTable = result.transactions.map(tx => `
+                        <tr>
+                            <td>${tx.payment_amount}</td>
+                            <td>${tx.payment_date}</td>
+                            <td>${tx.payment_type}</td>
+                        </tr>
+                    `).join('');
+
+                    ledger.innerHTML = `
+                        <h2>Loan Ledger for Loan ID: ${result.loan_id}</h2>
+                        <p><strong>Balance Amount:</strong> ${result.balance_amount}</p>
+                        <p><strong>Monthly EMI:</strong> ${result.monthly_emi}</p>
+                        <p><strong>EMIs Left:</strong> ${result.emi_left}</p>
+                        <h3>Transactions:</h3>
+                        <table class="ledger-table">
+                            <thead>
+                                <tr>
+                                    <th>Payment Amount</th>
+                                    <th>Payment Date</th>
+                                    <th>Payment Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${transactionsTable}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    document.getElementById('ledger').innerHTML = `<p>Error: ${result.error}</p>`;
+                }
+
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('ledger').innerHTML = `<p>Error: Could not retrieve ledger.</p>`;
+            }
+        }
+    </script>
+</head>
+<body>
+
+    <h1>Loan Ledger</h1>
+
+    <form id="loan_ledger_form" onsubmit="submitForm(event)">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="loan_id">Loan ID:</label>
+            <input type="number" id="loan_id" name="loan_id" required>
+        </div>
+        <button type="submit">Get Ledger</button>
+    </form>
+
+    <div id="ledger"></div>
+
+</body>
+</html>

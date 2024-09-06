@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Loan</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+            margin: 0;
+        }
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #4CAF50;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            padding: 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 0;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h1>Apply for Loan</h1>
+        <form id="loanForm">
+            {% csrf_token %}
+            <label for="customer_id">Customer ID:</label>
+            <input type="number" id="customer_id" name="customer_id" required>
+            
+            <label for="loan_amount">Loan Amount:</label>
+            <input type="number" id="loan_amount" name="loan_amount" required>
+            
+            <label for="loan_period">Loan Period (months):</label>
+            <input type="number" id="loan_period" name="loan_period" required>
+            
+            <label for="rate_of_interest">Rate of Interest (%):</label>
+            <input type="number" step="0.01" id="rate_of_interest" name="rate_of_interest" required>
+
+            <button type="submit">Submit</button>
+        </form>
+
+        <div id="result"></div>
+    </div>
+
+        <script>
+        document.getElementById('loanForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            
+            const customer_id = document.getElementById('customer_id').value;
+            const loan_amount = document.getElementById('loan_amount').value;
+            const loan_period = document.getElementById('loan_period').value;
+            const rate_of_interest = document.getElementById('rate_of_interest').value;
+
+            fetch('/api/lend/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    customer_id: customer_id,
+                    loan_amount: loan_amount,
+                    loan_period: loan_period,
+                    rate_of_interest: rate_of_interest
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('result').innerHTML = `
+                    <p>Total Amount to be Paid: ${data.total_amount}</p>
+                    <p>Monthly EMI: ${data.emi_amount}</p>
+                    <p>Loan ID: ${data.loan_id}</p>
+                `;
+            })
+            .catch(error => {
+                document.getElementById('result').innerHTML = `<p>Error: ${error}</p>`;
+            });
+        });
+        </script>
+    
+</body>
+</html>

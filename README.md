@@ -2,11 +2,17 @@
 A comprehensive Django-based project to manage bank loans efficiently, featuring:
 
 -Loan Application: Customers can apply for loans, with automated calculations for total loan amount and EMI based on loan period and interest rate.
+
 -Payment Processing: Supports EMI and lump-sum payments with real-time updates to outstanding balances and remaining EMIs.
+
 -Loan Ledger: Displays detailed loan information, including transaction history, remaining balance, and EMI details.
+
 -Customer Overview: Provides a complete account overview with loan summaries, total interest, and payment records.
+
 -Dynamic Calculations: Automates loan interest, total amount, and EMI computations using backend logic.
+
 -Built with Django REST Framework, this system ensures seamless loan management with clear and responsive interfaces.
+
 
 ![WhatsApp Image 2024-09-06 at 23 53 42_703b2c79](https://github.com/user-attachments/assets/e891c177-6d7a-4324-8b23-b983a6e620ee)
 ![WhatsApp Image 2024-09-06 at 23 54 59_4d60249c](https://github.com/user-attachments/assets/3f7f1d57-a6fd-424b-b387-e103f91a47de)
